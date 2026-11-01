@@ -209,14 +209,14 @@ export function Navbar() {
                     Dashboard
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    render={<Link href="/studios/add" />}
+                    render={<Link href="/add-studio" />}
                     className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium"
                   >
                     <PlusCircle className="size-4 text-primary" />
                     Add New Studio
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    render={<Link href="/my-studios" />}
+                    render={<Link href="/my-listings" />}
                     className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium"
                   >
                     <Layers className="size-4 text-primary" />
@@ -359,7 +359,7 @@ export function Navbar() {
                       <SheetClose
                         render={
                           <Link
-                            href="/studios/add"
+                            href="/add-studio"
                             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
                           />
                         }
@@ -370,7 +370,7 @@ export function Navbar() {
                       <SheetClose
                         render={
                           <Link
-                            href="/my-studios"
+                            href="/my-listings"
                             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
                           />
                         }
