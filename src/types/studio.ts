@@ -29,5 +29,7 @@ export interface StudioItem {
   hostEmail?: string;
   hostId?: string;
   featured?: boolean;
+  instantBook?: boolean;
+  verifiedEquip?: boolean;
   createdAt?: string;
 }

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   ArrowRight,
   MapPin,
+  Pencil,
   PlusCircle,
   ShieldCheck,
   Sparkles,
@@ -195,14 +196,24 @@ export default async function MyListingsPage() {
                       </span>
                     </p>
                   </div>
-                  <Button
-                    variant="default"
-                    render={<Link href={`/studios?studio=${studio.slug || id}`} />}
-                    className="h-10 rounded-lg px-5 text-sm font-semibold shadow-sm"
-                  >
-                    View Details
-                    <ArrowRight className="ml-1.5 size-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      render={<Link href={`/edit-studio/${id}`} />}
+                      className="h-10 rounded-lg px-3.5 text-sm font-semibold"
+                    >
+                      <Pencil className="mr-1.5 size-3.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="default"
+                      render={<Link href={`/studios?studio=${studio.slug || id}`} />}
+                      className="h-10 rounded-lg px-4 text-sm font-semibold shadow-sm"
+                    >
+                      View
+                      <ArrowRight className="ml-1.5 size-4" />
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             );
