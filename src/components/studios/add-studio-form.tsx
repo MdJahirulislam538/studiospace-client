@@ -66,13 +66,14 @@ const PRESET_AMENITIES = [
 ] as const;
 
 interface AddStudioFormProps {
+  token: string;
   user: {
     name: string;
     email: string;
   };
 }
 
-export function AddStudioForm({ user }: AddStudioFormProps) {
+export function AddStudioForm({ user, token }: AddStudioFormProps) {
   const router = useRouter();
 
   const [title, setTitle] = React.useState("");
@@ -153,10 +154,12 @@ export function AddStudioForm({ user }: AddStudioFormProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/studios", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/add-studio`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title: title.trim(),
@@ -171,13 +174,15 @@ export function AddStudioForm({ user }: AddStudioFormProps) {
           overview: overview.trim(),
           hostName: user.name,
           hostEmail: user.email,
+          createdAt: new Date().toISOString(),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        const msg = data?.error || "Failed to save studio listing.";
+        const msg =
+          data?.error || data?.msg || "Failed to save studio listing.";
         setFormError(msg);
         toast.add({
           title: "Submission Failed",

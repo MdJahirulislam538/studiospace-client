@@ -4,17 +4,23 @@ import { auth } from "@/lib/auth";
 import { AddStudioForm } from "@/components/studios/add-studio-form";
 
 export default async function AddStudioPage() {
+  const reqHeaders = await headers();
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: reqHeaders,
   });
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/add-studio");
   }
 
+  const { token } = await auth.api.getToken({
+    headers: reqHeaders,
+  });
+
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <AddStudioForm
+        token={token}
         user={{
           name: session.user.name || "Studio Host",
           email: session.user.email,
@@ -23,4 +29,3 @@ export default async function AddStudioPage() {
     </section>
   );
 }
-
