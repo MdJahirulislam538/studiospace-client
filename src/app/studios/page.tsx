@@ -1,6 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, MapPin, Maximize2, Sparkles, Star, Users } from "lucide-react";
-import { getFeaturedStudios } from "@/lib/studios";
+import { getAllStudios } from "@/lib/studios";
 import type { StudioCategory } from "@/types/studio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { StudioCardGridSkeleton } from "@/components/studios/studio-skeletons";
 
 const ALL_CATEGORIES: StudioCategory[] = [
   "Photo Studios",
@@ -24,15 +26,113 @@ interface StudiosPageProps {
   searchParams: Promise<{ category?: string; studio?: string }>;
 }
 
-export default async function StudiosPage({ searchParams }: StudiosPageProps) {
-  const resolvedParams = await searchParams;
-  const selectedCategory = resolvedParams.category || "All";
-  const allStudios = await getFeaturedStudios();
+async function StudiosGrid({ selectedCategory }: { selectedCategory: string }) {
+  const allStudios = await getAllStudios();
 
   const filteredStudios =
     selectedCategory === "All"
       ? allStudios
       : allStudios.filter((s) => s.category === selectedCategory);
+
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {filteredStudios.map((studio) => (
+        <Card
+          key={studio._id}
+          className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card p-0 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
+        >
+          <div>
+            <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+              <img
+                src={studio.image}
+                alt={studio.title}
+                loading="lazy"
+                width={640}
+                height={400}
+                className="size-full object-cover"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25"
+              />
+              <div className="absolute inset-x-3.5 top-3.5 flex items-center justify-between gap-2">
+                <Badge className="h-6 rounded-full bg-background/95 px-3 text-xs font-semibold text-foreground">
+                  {studio.category}
+                </Badge>
+                <span className="inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-xs font-semibold text-white">
+                  <Star className="size-3.5 fill-primary text-primary" />
+                  {studio.rating.toFixed(2)} ({studio.reviewCount})
+                </span>
+              </div>
+              <div className="absolute right-3.5 bottom-3.5 rounded-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                ${studio.hourlyRate} / hr
+              </div>
+            </div>
+
+            <CardHeader className="space-y-2 px-5 pt-5 pb-2">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <MapPin className="size-3.5 shrink-0 text-primary" />
+                <span className="truncate">{studio.location}</span>
+              </div>
+              <CardTitle className="line-clamp-2 font-heading text-lg font-bold leading-snug text-foreground">
+                {studio.title}
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-3 px-5 pb-4">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Maximize2 className="size-3.5 text-primary" />
+                  {studio.sqft.toLocaleString()} sq.ft.
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Users className="size-3.5 text-primary" />
+                  Up to {studio.capacity} crew
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {studio.amenities.map((amenity) => (
+                  <span
+                    key={amenity}
+                    className="rounded-md bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+                  >
+                    {amenity}
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </div>
+
+          <CardFooter className="mt-auto flex items-center justify-between border-t border-border bg-muted/30 px-5 py-4">
+            <div>
+              <span className="text-xs text-muted-foreground">
+                Hourly Rate
+              </span>
+              <p className="font-heading text-base font-bold text-foreground">
+                ${studio.hourlyRate}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  / hr
+                </span>
+              </p>
+            </div>
+            <Button
+              variant="default"
+              render={<Link href={`/studios/${studio._id}`} />}
+              className="h-10 rounded-lg px-5 text-sm font-semibold shadow-sm"
+            >
+              View Details
+              <ArrowRight className="ml-1.5 size-4" />
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export default async function StudiosPage({ searchParams }: StudiosPageProps) {
+  const resolvedParams = await searchParams;
+  const selectedCategory = resolvedParams.category || "All";
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -85,100 +185,13 @@ export default async function StudiosPage({ searchParams }: StudiosPageProps) {
         </div>
       </div>
 
-      {/* Equal-Height Studio Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredStudios.map((studio) => (
-          <Card
-            key={studio._id}
-            className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card p-0 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
-          >
-            <div>
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-                <img
-                  src={studio.image}
-                  alt={studio.title}
-                  loading="lazy"
-                  width={640}
-                  height={400}
-                  className="size-full object-cover"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25"
-                />
-                <div className="absolute inset-x-3.5 top-3.5 flex items-center justify-between gap-2">
-                  <Badge className="h-6 rounded-full bg-background/95 px-3 text-xs font-semibold text-foreground">
-                    {studio.category}
-                  </Badge>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-xs font-semibold text-white">
-                    <Star className="size-3.5 fill-primary text-primary" />
-                    {studio.rating.toFixed(2)} ({studio.reviewCount})
-                  </span>
-                </div>
-                <div className="absolute right-3.5 bottom-3.5 rounded-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-                  ${studio.hourlyRate} / hr
-                </div>
-              </div>
-
-              <CardHeader className="space-y-2 px-5 pt-5 pb-2">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <MapPin className="size-3.5 shrink-0 text-primary" />
-                  <span className="truncate">{studio.location}</span>
-                </div>
-                <CardTitle className="line-clamp-2 font-heading text-lg font-bold leading-snug text-foreground">
-                  {studio.title}
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent className="space-y-3 px-5 pb-4">
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Maximize2 className="size-3.5 text-primary" />
-                    {studio.sqft.toLocaleString()} sq.ft.
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Users className="size-3.5 text-primary" />
-                    Up to {studio.capacity} crew
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {studio.amenities.map((amenity) => (
-                    <span
-                      key={amenity}
-                      className="rounded-md bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
-                    >
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </div>
-
-            <CardFooter className="mt-auto flex items-center justify-between border-t border-border bg-muted/30 px-5 py-4">
-              <div>
-                <span className="text-xs text-muted-foreground">
-                  Hourly Rate
-                </span>
-                <p className="font-heading text-base font-bold text-foreground">
-                  ${studio.hourlyRate}{" "}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    / hr
-                  </span>
-                </p>
-              </div>
-              <Button
-                variant="default"
-                render={<Link href={`/studios?studio=${studio.slug}`} />}
-                className="h-10 rounded-lg px-5 text-sm font-semibold shadow-sm"
-              >
-                View Details
-                <ArrowRight className="ml-1.5 size-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      {/* Suspense Boundary for Studio Grid */}
+      <Suspense
+        key={selectedCategory}
+        fallback={<StudioCardGridSkeleton count={6} />}
+      >
+        <StudiosGrid selectedCategory={selectedCategory} />
+      </Suspense>
     </section>
   );
 }
-

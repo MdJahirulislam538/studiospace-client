@@ -149,7 +149,7 @@ export function FeaturedStudios({ studios }: FeaturedStudiosProps) {
               </div>
               <Button
                 variant="default"
-                render={<Link href={`/studios?studio=${studio.slug}`} />}
+                render={<Link href={`/studios/${studio._id}`} />}
                 className="h-10 rounded-lg px-5 text-sm font-semibold shadow-sm"
               >
                 View Details
