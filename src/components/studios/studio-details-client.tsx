@@ -375,36 +375,56 @@ export function StudioBookingWidget({
         hostName: studio.hostName || "Verified Studio Host",
         hostEmail: studio.hostEmail || "",
         projectNotes: projectNotes.trim(),
-        status: "Confirmed",
+        status: "Pending",
         createdAt: new Date().toISOString(),
       };
 
-      const response = await fetch(`${apiUrl}/bookings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      let saved = false;
+      try {
+        const response = await fetch(`${apiUrl}/bookings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+          saved = true;
+        }
+      } catch {
+        // Fallback to Next.js API route if Express server is not running
+      }
 
-      if (!response.ok) {
-        throw new Error("Could not save booking to server.");
+      if (!saved) {
+        const fallbackResponse = await fetch("/api/bookings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!fallbackResponse.ok) {
+          throw new Error("Could not save booking to database.");
+        }
       }
 
       setBookingConfirmed(true);
       toast.add({
-        title: "Workspace Booked Successfully!",
-        description: `${studio.title} is reserved for ${shootDate} at ${startTime} (${hours} hrs).`,
+        title: "Reservation Submitted (Pending)!",
+        description: `${studio.title} is reserved for ${shootDate} at ${startTime} (${hours} hrs) with Pending status.`,
         type: "success",
       });
       router.refresh();
-    } catch {
-      // Even if the local backend is offline during testing, confirm UX smoothly and show toast
-      setBookingConfirmed(true);
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Unable to complete booking right now. Please try again.";
+      setBookingError(msg);
       toast.add({
-        title: "Workspace Booked Successfully!",
-        description: `${studio.title} is reserved for ${shootDate} at ${startTime} (${hours} hrs).`,
-        type: "success",
+        title: "Booking Failed",
+        description: msg,
+        type: "error",
       });
     } finally {
       setIsSubmitting(false);
@@ -637,6 +657,12 @@ export function StudioBookingWidget({
                     {crewSize} crew members
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Reservation Status:</span>
+                  <Badge className="h-5 rounded-full bg-amber-500/15 px-2.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                    Pending
+                  </Badge>
+                </div>
                 <div className="flex justify-between border-t border-border pt-2 text-sm font-bold text-foreground">
                   <span>Total Reserved:</span>
                   <span className="text-primary">${totalAmount}</span>
@@ -644,24 +670,25 @@ export function StudioBookingWidget({
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="default"
+                  render={<Link href="/my-bookings" />}
+                  className="h-10 rounded-lg px-6 text-sm font-semibold shadow-sm"
+                >
+                  View My Bookings
+                  <ArrowRight className="ml-1.5 size-4" />
+                </Button>
                 <form method="dialog">
                   <Button
                     type="submit"
-                    variant="default"
+                    variant="outline"
                     value="done"
-                    className="h-10 rounded-lg px-6 text-sm font-semibold"
+                    className="h-10 rounded-lg px-5 text-sm font-semibold"
                   >
-                    Done
+                    Close
                   </Button>
                 </form>
-                <Button
-                  type="button"
-                  variant="outline"
-                  render={<Link href="/studios" />}
-                  className="h-10 rounded-lg px-5 text-sm font-semibold"
-                >
-                  Explore More Studios
-                </Button>
               </div>
             </div>
           ) : (
