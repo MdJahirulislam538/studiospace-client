@@ -355,8 +355,9 @@ export function StudioBookingWidget({
 
     setIsSubmitting(true);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = (
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+      ).replace(/\/+$/, "");
       const payload = {
         studioId: studio._id,
         studioTitle: studio.title,

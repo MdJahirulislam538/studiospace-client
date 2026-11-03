@@ -169,8 +169,9 @@ export function MyBookingsClient({ initialBookings }: MyBookingsClientProps) {
   const handleCancelBooking = async (booking: BookingItem) => {
     setCancellingId(booking._id);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = (
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+      ).replace(/\/+$/, "");
 
       let updated = false;
       try {

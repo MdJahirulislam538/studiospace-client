@@ -154,7 +154,9 @@ export function AddStudioForm({ user, token }: AddStudioFormProps) {
 
     setIsSubmitting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = (
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+      ).replace(/\/+$/, "");
       const response = await fetch(`${apiUrl}/add-studio`, {
         method: "POST",
         headers: {

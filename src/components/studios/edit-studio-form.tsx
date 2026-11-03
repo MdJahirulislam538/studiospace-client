@@ -163,8 +163,9 @@ export function EditStudioForm({ studio, user, token }: EditStudioFormProps) {
 
     setIsSubmitting(true);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = (
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+      ).replace(/\/+$/, "");
       const response = await fetch(`${apiUrl}/edit-studio/${studio._id}`, {
         method: "PUT",
         headers: {
